@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biocontrôle - Projets</title>
+    <link rel="stylesheet" href="stylesprojet.css">
+</head>
+<body>
+    <div class="sidebar" id="sidebar">
+        <button class="toggle-btn" id="toggleSidebar">☰</button>
+        <a href="index.html" class="sidebar-link">Accueil</a>
+        <a href="4SYSLEG.html" class="sidebar-link">4SYSLEG</a>
+        <a href="BIORECO.html" class="sidebar-link">BIORECO</a>
+        <a href="BREIZLEG.html" class="sidebar-link">BREIZLEG</a>
+        <a href="CORS EPE.html" class="sidebar-link">CORS EPE</a>
+        <a href="DEPHY CAROTTE.html" class="sidebar-link">DEPHY CAROTTE</a>
+    </div>
+    <main class="content">
+        <h1>Retrouvez tous les projets concernant le biocontrôle</h1>
+        <div class="dropdown-container">
+            <select class="dropdown" id="projectDropdown">
+                <option value="" disabled selected>Sélectionnez un projet</option>
+                <option value="4SYSLEG.html">4SYSLEG 1</option>
+                <option value="BIORECO.html">BIORECO 2</option>
+                <option value="BREIZLEG.html">BREIZLEG 3</option>
+                <option value="CORS EPE.html">CORS EPE 4</option>
+                <option value="DEPHY CAROTTE.html">DEPHY CAROTTE 4</option>
+            </select>
+        </div>
+    </main>
+    <script>
+        const sidebar = document.getElementById('sidebar');
+        const toggleSidebar = document.getElementById('toggleSidebar');
+        const projectDropdown = document.getElementById('projectDropdown');
+
+        toggleSidebar.addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+        });
+
+        projectDropdown.addEventListener('change', (event) => {
+            const selectedValue = event.target.value;
+            if (selectedValue) {
+                window.location.href = selectedValue;
+            }
+        });
+    </script>
+</body>
+</html>
+
+
+
