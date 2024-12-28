@@ -1,0 +1,190 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graphique filtré avec Chart.js</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link rel="stylesheet" href="stylesprojet.css">
+</head>
+<body>
+
+    <div class="sidebar" id="sidebar">
+        <button class="toggle-btn" id="toggleSidebar">☰</button>
+        <a href="biocontrole-projet.html" class="sidebar-link">Accueil</a>
+        <a href="4SYSLEG.html" class="sidebar-link">4SYSLEG</a>
+        <a href="BIORECO.html" class="sidebar-link">BIORECO</a>
+        <a href="BREIZLEG.html" class="sidebar-link">BREIZLEG</a>
+        <a href="CORS EPE.html" class="sidebar-link">CORS EPE</a>
+        <a href="DEPHY CAROTTE.html" class="sidebar-link">DEPHY CAROTTE</a>
+    </div>
+    
+    <h1>CORS EPE</h1>
+
+    <!-- Canvas avec taille réduite -->
+    <div class="centered-content">
+        <!-- Deux graphiques côte à côte en haut -->
+        <div class="charts-container">
+            <div class="chart">
+                <canvas id="barChart"></canvas>
+            </div>
+        </div>
+    </div>
+    
+        
+
+    </div>
+    <script>
+        const sidebar = document.getElementById('sidebar');
+        const toggleSidebar = document.getElementById('toggleSidebar');
+        const projectDropdown = document.getElementById('projectDropdown');
+
+        toggleSidebar.addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+        });
+
+        projectDropdown.addEventListener('change', (event) => {
+            const selectedValue = event.target.value;
+            if (selectedValue) {
+                window.location.href = selectedValue;
+            }
+        });
+    </script>
+
+    <script>
+        d3.csv("fichier-methodes-controle-biologique_v1.csv").then(function(data) {
+            console.log("Données brutes chargées :", data);
+
+            // Filtrer les données pour le projet "4SYSLEG"
+            const filteredData = data.filter(d => 
+                d["Nom du projet "] && d["Nom du projet "].trim().toLowerCase() === "cors expe"
+            );
+
+            if (filteredData.length === 0) {
+                console.error("Aucune donnée ne correspond aux critères spécifiés !");
+                return;
+            }
+
+            // Calculer la moyenne de satisfaction pour chaque méthode
+            const satisfactionMap = {};
+            filteredData.forEach(d => {
+                const method = d["Nom m�thode "]?.trim();
+                const satisfaction = d["Niveau de satisfaction de l'utilisation de la m�thode"]?.trim().toLowerCase();
+
+                
+
+                if (!method || !satisfaction) return;
+
+                const score = (satisfaction === "bon") ? 3 :
+                              (satisfaction === "mitigé") ? 2 :
+                              (satisfaction === "insatisfaisant") ? 1.5 :
+                              (satisfaction === "aucun avis émis") ? 1 : 1;
+
+                if (!satisfactionMap[method]) {
+                    satisfactionMap[method] = { total: 0, count: 0 };
+                }
+
+                satisfactionMap[method].total += score;
+                satisfactionMap[method].count += 1;
+            });
+
+            const labels = Object.keys(satisfactionMap);
+            const values = labels.map(method => {
+                const { total, count } = satisfactionMap[method];
+                return total / count; // Calcul de la moyenne
+            });
+
+            console.log("Labels (Méthodes) :", labels);
+            console.log("Valeurs (Moyenne de satisfaction) :", values);
+
+            // Couleurs différentes pour chaque barre
+            const colors = [
+                'rgba(255, 99, 132, 0.6)',  // Rouge
+                'rgba(54, 162, 235, 0.6)',  // Bleu
+                'rgba(255, 206, 86, 0.6)',  // Jaune
+                'rgba(75, 192, 192, 0.6)',  // Vert
+                'rgba(153, 102, 255, 0.6)', // Violet
+                'rgba(255, 159, 64, 0.6)'   // Orange
+            ];
+
+            const borderColors = colors.map(color => color.replace('0.6', '1')); // Bordures opaques
+
+            // Mapping des URLs pour chaque méthode
+            const urlMap = {
+                
+                [labels[0]]: "Coccinelles, rhizobius lophantae_cors_expe.html", 
+                [labels[1]]: "Encarsia berlesei_corse_expe.html", 
+                [labels[2]]: "Neodryinus typhlocibae_cors_expe.html", 
+                [labels[3]]: "Aphytis melinus_cors_expe.html", 
+                [labels[4]]: "Nichoir_cors_expe.html", 
+                [labels[5]]: "Phéromone diptères_cors_expe.html", 
+                [labels[6]]: "Hydrogénocarbonate de potassium_cors_expe.html", 
+                
+               
+                
+                
+               
+                
+                // Ajouter des mappings supplémentaires si nécessaire
+            };
+
+            console.log("lien :", urlMap);
+
+            // Création du graphique
+            const ctx = document.getElementById('barChart').getContext('2d');
+            const barChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: "Moyenne de satisfaction",
+                        data: values,
+                        backgroundColor: colors.slice(0, labels.length),
+                        borderColor: borderColors.slice(0, labels.length),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: true, position: 'top' },
+                        title: { display: true, text: 'Moyenne de satisfaction par méthode (cors epe)' }
+                    },
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Méthodes' },
+                            categoryPercentage: 0.8,
+                            barPercentage: 0.6
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Moyenne de satisfaction' },
+                            ticks: {
+                                stepSize: 1,
+                                callback: value => ["Aucun", "insatisfaisant", "Mitigé", "Bon"][value] || value
+                            }
+                        }
+                    },
+                    // Ajouter un événement `onClick` pour redirection
+                    onClick: function(evt, elements) {
+                        if (elements.length > 0) {
+                            const elementIndex = elements[0].index;
+                            const method = labels[elementIndex];
+                            console.log("Méthode cliquée :", method);
+
+                            // Redirection vers une page spécifique à la méthode
+                            const targetUrl = urlMap[method] || "default-page.html";
+                            window.location.href = targetUrl;
+                        }
+                    }
+                }
+            });
+        }).catch(function(error) {
+            console.error("Erreur lors du chargement du fichier CSV :", error);
+        });
+    </script>
+</body>
+</html>
